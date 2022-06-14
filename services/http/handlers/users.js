@@ -58,17 +58,24 @@ module.exports = router
         .required(),
       password: Joi.string()
         .required()
+        .min(4)
+        .max(8)
+        .messages({
+          'string.empty': 'login_id" cannot be an empty field',
+          'string.min': 'Password should have a minimum length of {#limit}',
+          'any.required': 'Password is a required field'
+        }),
       // minimum 4 char, at least one letter and one number
-        .pattern(new RegExp(/^(?=.*[A-Za-z])(?=.*\d)[A-Za-z\d]{4,8}$/)),
+      // .pattern(new RegExp(/^(?=.*[A-Za-z])(?=.*\d)[A-Za-z\d]{4,8}$/)),
       confirm_password: Joi.ref('password')
     })
 
     try {
-      const req = await schema.validateAsync(ctx.request.body)
+      const request = await schema.validateAsync(ctx.request.body)
 
-      const user = await users.find(req.loginId)
+      const user = await users.find(request.login_id)
 
-      if (!_isEqual(req.password, req.confirm_password)) {
+      if (!_isEqual(request.password, request.confirm_password)) {
         ctx.throw(401, 'YOUR PASSWORD MUST BE MINIMUM OF 4 CHARACTERS, AT LEAST 1 LETTER AND 1 NUMBER', {
           body: [
             { params: 'name', msg: '' },
@@ -77,7 +84,7 @@ module.exports = router
         })
       }
 
-      const isValidCredentials = await users.checkLogin(req.loginId, req.password)
+      const isValidCredentials = await users.checkLogin(request.login_id, request.password)
       if (!isValidCredentials) {
         return
       }
