@@ -46,9 +46,9 @@ module.exports = router
       }
       ctx.body = await JWT.sign({ loginId: user.login_id })
       return next()
-    } catch (err) {
-      console.log(err)
-      ctx.throw(err)
+    } catch (error) {
+      console.log(error)
+      ctx.throw(error)
     }
   })
 
