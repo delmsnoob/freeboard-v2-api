@@ -9,8 +9,6 @@ module.exports = {
     const user = await store.knex('users')
       .where('login_id', loginId)
 
-    console.log(user, 'user')
-
     if (!user.length) {
       return false
     }
@@ -25,8 +23,10 @@ module.exports = {
       const hashPassword = await bcrypt.hash(payload.password)
       payload.password = hashPassword
 
-      return await store.knex('users')
+      await store.knex('users')
         .insert(payload)
+
+      return payload.login_id
     } catch (error) {
       console.log(error)
       throw new Error(error)

@@ -11,8 +11,6 @@ const jwtModule = {
       key: ['duration', 'type']
     })
 
-    console.log(sessionDefaults, 'session default')
-
     if (!sessionDefaults || !sessionDefaults.setting) {
       throw new Error('No session defaults found!')
     }
