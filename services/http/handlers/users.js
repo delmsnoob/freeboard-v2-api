@@ -53,21 +53,35 @@ module.exports = router
   })
 
   .post('/register', async ctx => {
+    // const passwordPattern = new RegExp(/^(?=.*[A-Za-z])(?=.*\d)[A-Za-z\d]{4,8}$/)
     const schema = Joi.object({
       login_id: Joi.string()
-        .required(),
+        .lowercase()
+        .alphanum()
+        .min(4)
+        .strict()
+        // .error(new Error('Login id must contain minimum of 4 letters, lowercase, and alphanumeric characters')),
+        .messages({
+          'string.alphanum': 'login id must only contain alphanumberic characters',
+          'string.min': 'login id must contain a minimum of 4 characters',
+          'string.lowercase': 'login id must be in lowercase',
+          'any.required': 'login id is cannot be empty'
+        }),
       password: Joi.string()
         .required()
+        .alphanum()
         .min(4)
         .max(8)
         .messages({
-          'string.empty': 'login_id" cannot be an empty field',
           'string.min': 'Password should have a minimum length of {#limit}',
+          'string.max': 'Password should only have a maximum of {#limit} characters ',
+          'string.alphanum': 'Password must contain alphanumeric characters only',
           'any.required': 'Password is a required field'
         }),
-      // minimum 4 char, at least one letter and one number
-      // .pattern(new RegExp(/^(?=.*[A-Za-z])(?=.*\d)[A-Za-z\d]{4,8}$/)),
-      confirm_password: Joi.ref('password')
+      confirm_password: Joi.valid(Joi.ref('password'))
+        .messages({
+          'any.only': 'Password must match'
+        })
     })
 
     try {
@@ -75,8 +89,8 @@ module.exports = router
 
       const user = await users.find(request.login_id)
 
-      if (!_isEqual(request.password, request.confirm_password)) {
-        ctx.throw(401, 'YOUR PASSWORD MUST BE MINIMUM OF 4 CHARACTERS, AT LEAST 1 LETTER AND 1 NUMBER', {
+      if (user) {
+        return ctx.throw(422, 'THIS USERNAME IS ALREADY IN USE', {
           body: [
             { params: 'name', msg: '' },
             { params: 'password', msg: '' }
@@ -84,22 +98,27 @@ module.exports = router
         })
       }
 
-      const isValidCredentials = await users.checkLogin(request.login_id, request.password)
-      if (!isValidCredentials) {
-        return
+      const params = {
+        login_id: request.login_id,
+        password: request.password
       }
 
-      ctx.throw(401, 'Login failed, invalid name or password', {
-        body: [
-          { param: 'name', msg: 'invalid name' },
-          { param: 'password', msg: 'invalid password' }
-        ]
-      })
+      ctx.body = await users.store(params)
+      return ctx.body
 
-      ctx.body = await JWT.sign({
-        login_id: user.login_id,
-        id: user.id
-      })
+      // if (!_isEqual(request.password, request.confirm_password)) {
+      //   ctx.throw(401, 'YOUR PASSWORD MUST BE MINIMUM OF 4 CHARACTERS, AT LEAST 1 LETTER AND 1 NUMBER', {
+      //     body: [
+      //       { params: 'name', msg: '' },
+      //       { params: 'password', msg: '' }
+      //     ]
+      //   })
+      // }
+
+      // const isValidCredentials = await users.checkLogin(request.login_id, request.password)
+      // if (!isValidCredentials) {
+      //   return
+      // }
     } catch (error) {
       console.log(error)
       ctx.throw(error)
