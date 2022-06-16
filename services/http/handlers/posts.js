@@ -4,11 +4,17 @@ const posts = require('@store/posts')
 
 // lib
 const Joi = require('joi')
+const _get = require('lodash/get')
 
 // utilities
 
+// middlewares
+const authentication = require('@middleware/authentication')
+
 module.exports = router
   .prefix('/posts')
+
+  .use(authentication())
 
   .post('/', async ctx => {
     const schema = Joi.object({
@@ -36,3 +42,39 @@ module.exports = router
       ctx.throw(error)
     }
   })
+
+  .get('/fetchPosts', async (ctx, next) => {
+    try {
+      const query = ctx.request.query
+      console.log(query)
+
+      const params = {
+        filterBy: query.filterBy,
+        q: query.q,
+        page: query.page,
+        rows: query.rows,
+        sortBy: query.sort_by,
+        sort: query.sort
+      }
+
+      const count = await posts.list({ ...params, isCount: true })
+
+      const list = await posts.list({ ...params })
+
+      ctx.body = { count: _get(count, 'total', 0), list }
+    } catch (error) {
+      ctx.throw(error)
+    }
+  })
+
+/*  .get('/', async ctx => {
+    try {
+      const params = {
+        id: ctx.user_id
+      }
+      ctx.body = await posts.find(params)
+    } catch (error) {
+      console.log(error)
+      ctx.throw(error)
+    }
+  }) */
