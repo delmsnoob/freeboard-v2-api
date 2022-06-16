@@ -1,6 +1,7 @@
 const router = require('koa-router')()
 
 const users = require('@store/users')
+const setting = require('@store/setting')
 
 // lib
 const Joi = require('joi')
@@ -10,6 +11,8 @@ const _isEqual = require('lodash/isEqual')
 
 // utilities
 const JWT = require('@utilities/jwt')
+
+// middlewares
 
 module.exports = router
   .prefix('/users')
@@ -105,22 +108,25 @@ module.exports = router
 
       ctx.body = await users.store(params)
       return ctx.body
-
-      // if (!_isEqual(request.password, request.confirm_password)) {
-      //   ctx.throw(401, 'YOUR PASSWORD MUST BE MINIMUM OF 4 CHARACTERS, AT LEAST 1 LETTER AND 1 NUMBER', {
-      //     body: [
-      //       { params: 'name', msg: '' },
-      //       { params: 'password', msg: '' }
-      //     ]
-      //   })
-      // }
-
-      // const isValidCredentials = await users.checkLogin(request.login_id, request.password)
-      // if (!isValidCredentials) {
-      //   return
-      // }
     } catch (error) {
       console.log(error)
       ctx.throw(error)
     }
   })
+
+/* .get('/', async (ctx, next) => {
+    try {
+      const sessionSettingDefault = await setting.getDeepSetting({
+        name: 'session_default',
+        key: ['duration', 'type']
+      })
+
+      if (!sessionSettingDefault) {
+        ctx.throw(500, 'Setting not found')
+      }
+
+      ctx.body = await users.get(ctx.id)
+    } catch (error) {
+      ctx.throw(500, error)
+    }
+  }) */
