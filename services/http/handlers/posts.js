@@ -46,7 +46,6 @@ module.exports = router
   .get('/fetchPosts', async (ctx, next) => {
     try {
       const query = ctx.request.query
-      console.log(query)
 
       const params = {
         filterBy: query.filterBy,

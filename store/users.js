@@ -38,23 +38,4 @@ module.exports = {
       .where('login_id', loginId)
       .first()
   }
-
-  /* async get (userId) {
-    try {
-      const data = await store.knex('users')
-        .where('users.id', userId)
-        .select(
-          'users.login_id'
-        )
-        .first()
-
-      if (!data) {
-        return
-      }
-      return data
-    } catch (error) {
-      console.log(error)
-      throw error
-    }
-  } */
 }

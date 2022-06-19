@@ -1,13 +1,11 @@
 const router = require('koa-router')()
 
 const users = require('@store/users')
-const setting = require('@store/setting')
 
 // lib
 const Joi = require('joi')
 const _isEmpty = require('lodash/isEmpty')
 const _isUndefined = require('lodash/isUndefined')
-const _isEqual = require('lodash/isEqual')
 
 // utilities
 const JWT = require('@utilities/jwt')
@@ -113,20 +111,3 @@ module.exports = router
       ctx.throw(error)
     }
   })
-
-/* .get('/', async (ctx, next) => {
-    try {
-      const sessionSettingDefault = await setting.getDeepSetting({
-        name: 'session_default',
-        key: ['duration', 'type']
-      })
-
-      if (!sessionSettingDefault) {
-        ctx.throw(500, 'Setting not found')
-      }
-
-      ctx.body = await users.get(ctx.id)
-    } catch (error) {
-      ctx.throw(500, error)
-    }
-  }) */
