@@ -4,24 +4,25 @@ const store = require('@store')
 const { raw, makeQuery } = require('@utilities/knex-helper')
 
 // helpers
-const getKey = (key, obj) => obj[key] === undefined ? obj.default : obj[key]
 
 module.exports = {
-  async list ({ filterBy, q, page, rows, sortBy, sort, dateFrom, dateTo, dateBy, isCount }) {
-    try {
-      const filterDictionary = getKey(filterBy, {})
-      const sortDictionary = getKey(sortBy, {
-        created_at: 'posts.created_at'
-      })
-      const dateByDictionary = getKey(dateBy, {})
+  async list ({ filterBy, q, page, rows, sortBy, sort, isCount }) {
+    const filterDictionary = {
+      author: 'posts.user_id',
+      content: 'posts.post_content'
+    }
 
-      const query = store.knex({ posts: 'posts' })
+    const sortDictionary = {
+      created_at: 'posts.created_at'
+    }
+
+    try {
+      const query = await store.knex('posts')
         .whereNull('posts.deleted_at')
         .modify(knex => {
           makeQuery({
-            ...{ filterBy: filterDictionary, q },
-            ...{ sortBy: sortDictionary, sort },
-            ...{ dateBy: dateByDictionary, dateFrom, dateTo },
+            ...{ filterBy, q, filterDictionary },
+            ...{ sortBy, sort, sortDictionary },
             ...{ page, rows },
             knex,
             isCount
@@ -41,12 +42,7 @@ module.exports = {
             })
           }
         })
-
-      const posts = await query
-
-      if (posts) {
-        return posts
-      }
+      return query
     } catch (error) {
       console.log(error)
       throw error
